@@ -366,6 +366,56 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .ch-gcal{background:var(--gcal-pale);color:var(--gcal);}
 .ch-dim{background:var(--surface3);color:var(--text3);}
 
+
+/* ── 日/週通知面板 ── */
+.sched-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start; }
+@media(max-width:900px){ .sched-wrap { grid-template-columns: 1fr; } }
+.notify-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+}
+.np-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.np-title { font-size: 13px; font-weight: 700; }
+.np-tabs { display: flex; gap: 2px; }
+.np-tab {
+  padding: 4px 10px; border-radius: 3px; font-size: 11px;
+  cursor: pointer; border: none; font-family: 'Noto Sans TC', sans-serif;
+  background: transparent; color: var(--text3); transition: all 0.1s;
+}
+.np-tab.active { background: var(--surface3); color: var(--text); }
+.np-body { padding: 12px 14px; max-height: 600px; overflow-y: auto; }
+.np-section { margin-bottom: 14px; }
+.np-section-label {
+  font-size: 9px; letter-spacing: 2px; color: var(--text3);
+  text-transform: uppercase; font-family: 'DM Mono', monospace;
+  margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
+}
+.np-event {
+  display: flex; gap: 8px; padding: 6px 0;
+  border-bottom: 1px solid var(--border); font-size: 11px;
+}
+.np-event:last-child { border-bottom: none; }
+.np-event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.np-event-text { flex: 1; color: var(--text2); line-height: 1.5; }
+.np-event-date { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; flex-shrink: 0; }
+.np-channel {
+  display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap;
+}
+.np-tag {
+  font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 2px;
+}
+.np-empty { font-size: 12px; color: var(--text3); text-align: center; padding: 20px 0; }
+
 /* scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
@@ -760,8 +810,128 @@ function renderSchedule(el) {
       <button class="vt-btn ${calView==='gantt'?'active':''}" onclick="switchView('gantt')">甘特</button>
     </div>
   </div>
-  <div id="calBody"></div>`;
+  <div class="sched-wrap">
+    <div id="calBody"></div>
+    <div class="notify-panel" id="notifyPanel">
+      <div class="np-header">
+        <div class="np-title">📬 排程通知</div>
+        <div class="np-tabs">
+          <button class="np-tab active" id="npTabDay" onclick="switchNotifyTab('day')">今日</button>
+          <button class="np-tab" id="npTabWeek" onclick="switchNotifyTab('week')">本週</button>
+        </div>
+      </div>
+      <div class="np-body" id="npBody"></div>
+    </div>
+  </div>`;
   renderCalBody();
+  renderNotifyPanel('day');
+}
+
+let npCurrentTab = 'day';
+
+function switchNotifyTab(tab) {
+  npCurrentTab = tab;
+  document.getElementById('npTabDay').classList.toggle('active', tab==='day');
+  document.getElementById('npTabWeek').classList.toggle('active', tab==='week');
+  renderNotifyPanel(tab);
+}
+
+function renderNotifyPanel(tab) {
+  const panel = document.getElementById('npBody');
+  if (!panel) return;
+
+  const isDesign = ['kuo','tsai-h'].includes(currentUser);
+  const isEng    = ['tsai-c','chiu','meng'].includes(currentUser);
+  const u = USERS[currentUser];
+
+  // 取得日期範圍
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const weekEnd = new Date(today);
+  weekEnd.setDate(today.getDate() + 6);
+  const weekEndStr = weekEnd.toISOString().split('T')[0];
+
+  // 篩選事件
+  const allEvents = getCalEvents();
+  let filtered = [];
+  if (tab === 'day') {
+    filtered = allEvents.filter(e => e.date === todayStr);
+  } else {
+    filtered = allEvents.filter(e => e.date >= todayStr && e.date <= weekEndStr);
+  }
+
+  // 通知管道標示
+  const channels = isDesign
+    ? '<span class="np-tag" style="background:var(--line-pale);color:var(--line-c);">💬 Line</span><span class="np-tag" style="background:var(--blue-pale);color:var(--blue);">📧 Email</span>'
+    : '<span class="np-tag" style="background:var(--line-pale);color:var(--line-c);">💬 Line</span>';
+
+  const dateLabel = tab === 'day'
+    ? todayStr
+    : `${todayStr} ～ ${weekEndStr}`;
+
+  if (filtered.length === 0) {
+    panel.innerHTML = `
+      <div class="np-channel">${channels}</div>
+      <div style="margin-top:6px;font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;">${dateLabel}</div>
+      <div class="np-empty">${tab==='day'?'今日':'本週'}無排程工項</div>`;
+    return;
+  }
+
+  // 依日期分組（週視圖）
+  let html = `<div class="np-channel">${channels}</div>
+    <div style="margin-top:6px;margin-bottom:12px;font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;">${dateLabel}</div>`;
+
+  if (tab === 'day') {
+    html += `<div class="np-section">
+      <div class="np-section-label">${isDesign?'設計部':'工程部'} · 今日工項（${filtered.length}筆）</div>`;
+    filtered.forEach(e => {
+      html += `<div class="np-event">
+        <div class="np-event-dot" style="background:${getDotColor(e.cls)};"></div>
+        <div class="np-event-text">${e.text}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  } else {
+    // 週視圖按日期分組
+    const byDate = {};
+    filtered.forEach(e => {
+      if (!byDate[e.date]) byDate[e.date] = [];
+      byDate[e.date].push(e);
+    });
+    const days = ['日','一','二','三','四','五','六'];
+    Object.keys(byDate).sort().forEach(date => {
+      const d = new Date(date);
+      const dayName = days[d.getDay()];
+      html += `<div class="np-section">
+        <div class="np-section-label">週${dayName} ${date.slice(5)} （${byDate[date].length}筆）</div>`;
+      byDate[date].forEach(e => {
+        html += `<div class="np-event">
+          <div class="np-event-dot" style="background:${getDotColor(e.cls)};"></div>
+          <div class="np-event-text">${e.text}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  }
+
+  // 提醒說明
+  const reminderTime = isDesign
+    ? '每日 07:00 Line + Email · 每週一 07:00 週預覽'
+    : '每日 07:00 Line · 每週一 07:00 週預覽';
+  html += `<div style="margin-top:8px;padding:8px 10px;background:var(--surface3);border-radius:4px;font-size:10px;color:var(--text3);">
+    🕖 ${reminderTime}
+  </div>`;
+
+  panel.innerHTML = html;
+}
+
+function getDotColor(cls) {
+  const map = {
+    'ce-sage':'var(--sage)', 'ce-earth':'var(--earth)',
+    'ce-blue':'var(--blue)', 'ce-red':'var(--red)',
+    'ce-amber':'var(--amber)', 'ce-gcal':'var(--gcal)',
+  };
+  return map[cls] || 'var(--text3)';
 }
 
 function renderCalBody() {
@@ -831,6 +1001,7 @@ function switchView(v) {
   calView=v;
   document.querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active',b.textContent===(v==='month'?'月':'甘特')));
   renderCalBody();
+  if(npCurrentTab) renderNotifyPanel(npCurrentTab);
 }
 
 function openAddEvent() {
