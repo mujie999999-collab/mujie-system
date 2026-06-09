@@ -1437,6 +1437,13 @@ function gisLoaded() {
     callback: async (resp) => {
       if (resp.error) { console.error('GCal auth error:', resp); return; }
       gcalAuthorized = true;
+      // token 存入 localStorage，下次不需重新授權
+      if (resp.access_token) {
+        localStorage.setItem('mujie_gcal_token', JSON.stringify({
+          access_token: resp.access_token,
+          expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
+        }));
+      }
       showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
       await loadGCalEvents();
       updateGCalBtn();
@@ -1649,6 +1656,20 @@ function applyGCalConfig() {
   }, 500);
 }
 
+// 從 localStorage 載入已儲存的 token
+function loadSavedToken() {
+  try {
+    const t = JSON.parse(localStorage.getItem('mujie_gcal_token') || 'null');
+    if (!t) return null;
+    // 檢查是否過期（預留 5 分鐘緩衝）
+    if (Date.now() > t.expires_at - 300000) {
+      localStorage.removeItem('mujie_gcal_token');
+      return null;
+    }
+    return t;
+  } catch { return null; }
+}
+
 // 從 localStorage 載入已儲存的設定
 function loadSavedConfig() {
   try {
@@ -1676,6 +1697,12 @@ function initGapiFromConfig() {
             callback: async (resp) => {
               if (resp.error) return;
               gcalAuthorized = true;
+              if (resp.access_token) {
+                localStorage.setItem('mujie_gcal_token', JSON.stringify({
+                  access_token: resp.access_token,
+                  expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
+                }));
+              }
               showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
               await loadGCalEvents();
               updateGCalBtn();
@@ -1683,7 +1710,21 @@ function initGapiFromConfig() {
             },
           });
           gisInited = true;
-          showToast('Google Calendar API 就緒，點排程日曆開始授權 ✓');
+          // 檢查是否有已儲存的 token
+          const savedToken = loadSavedToken();
+          if (savedToken) {
+            gapi.client.setToken({ access_token: savedToken.access_token });
+            gcalAuthorized = true;
+            showToast('Google Calendar 自動連結成功 ✓');
+            loadGCalEvents().then(() => {
+              updateGCalBtn();
+              if (currentTab === 'schedule') {
+                setTimeout(() => navigateTo('schedule'), 300);
+              }
+            });
+          } else {
+            showToast('Google Calendar API 就緒，點排程日曆開始授權 ✓');
+          }
         }
       });
     }
