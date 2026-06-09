@@ -1408,6 +1408,27 @@ const GCAL_CONFIG = {
   CALENDAR_ID: 'mujie999999@gmail.com',
 };
 
+// Google Apps Script Token Server URL
+const GAS_TOKEN_URL = 'https://script.google.com/macros/s/AKfycbyO1cxE9NPHejypQGvDVhXXwgfYn5O3ixtsmd7mXw_hrQlsgZV20AeDojlgw_nulxQc9w/exec';
+
+
+// ── GAS Token Server 函式 ──────────────────────
+async function saveTokenToGAS(userId, token, expiresAt) {
+  try {
+    const url = `${GAS_TOKEN_URL}?action=saveToken&user=${userId}&token=${encodeURIComponent(token)}&expires=${expiresAt}`;
+    await fetch(url);
+  } catch(e) { console.log('GAS save token failed:', e); }
+}
+
+async function loadTokenFromGAS(userId) {
+  try {
+    const url = `${GAS_TOKEN_URL}?action=getToken&user=${userId}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.status === 'ok' && data.access_token) return data.access_token;
+    return null;
+  } catch(e) { return null; }
+}
 // GCal 狀態
 let gapiInited = false;
 let gisInited  = false;
@@ -1437,12 +1458,15 @@ function gisLoaded() {
     callback: async (resp) => {
       if (resp.error) { console.error('GCal auth error:', resp); return; }
       gcalAuthorized = true;
-      // token 存入 localStorage，下次不需重新授權
       if (resp.access_token) {
+        const expiresAt = Date.now() + (resp.expires_in || 3600) * 1000;
+        // 存到 localStorage（短期）
         localStorage.setItem('mujie_gcal_token', JSON.stringify({
           access_token: resp.access_token,
-          expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
+          expires_at: expiresAt,
         }));
+        // 同時存到 GAS Token Server（長期）
+        saveTokenToGAS(currentUser, resp.access_token, expiresAt);
       }
       showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
       await loadGCalEvents();
@@ -1698,10 +1722,12 @@ function initGapiFromConfig() {
               if (resp.error) return;
               gcalAuthorized = true;
               if (resp.access_token) {
+                const expiresAt = Date.now() + (resp.expires_in || 3600) * 1000;
                 localStorage.setItem('mujie_gcal_token', JSON.stringify({
                   access_token: resp.access_token,
-                  expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
+                  expires_at: expiresAt,
                 }));
+                saveTokenToGAS(currentUser, resp.access_token, expiresAt);
               }
               showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
               await loadGCalEvents();
@@ -1710,7 +1736,7 @@ function initGapiFromConfig() {
             },
           });
           gisInited = true;
-          // 檢查是否有已儲存的 token
+          // 先檢查 localStorage，再嘗試 GAS Token Server
           const savedToken = loadSavedToken();
           if (savedToken) {
             gapi.client.setToken({ access_token: savedToken.access_token });
@@ -1718,12 +1744,27 @@ function initGapiFromConfig() {
             showToast('Google Calendar 自動連結成功 ✓');
             loadGCalEvents().then(() => {
               updateGCalBtn();
-              if (currentTab === 'schedule') {
-                setTimeout(() => navigateTo('schedule'), 300);
-              }
+              if (currentTab === 'schedule') setTimeout(() => navigateTo('schedule'), 300);
             });
           } else {
-            showToast('Google Calendar API 就緒，點排程日曆開始授權 ✓');
+            // 嘗試從 GAS Token Server 取 token
+            loadTokenFromGAS(currentUser).then(token => {
+              if (token) {
+                gapi.client.setToken({ access_token: token });
+                gcalAuthorized = true;
+                localStorage.setItem('mujie_gcal_token', JSON.stringify({
+                  access_token: token,
+                  expires_at: Date.now() + 3000000,
+                }));
+                showToast('Google Calendar 自動連結成功 ✓');
+                loadGCalEvents().then(() => {
+                  updateGCalBtn();
+                  if (currentTab === 'schedule') setTimeout(() => navigateTo('schedule'), 300);
+                });
+              } else {
+                showToast('Google Calendar API 就緒，點排程日曆開始授權 ✓');
+              }
+            });
           }
         }
       });
