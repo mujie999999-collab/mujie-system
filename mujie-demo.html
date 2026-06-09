@@ -1267,8 +1267,8 @@ function gisLoaded() {
       gcalAuthorized = true;
       showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
       await loadGCalEvents();
-      // 如果目前在排程頁面，重新渲染
-      if (currentTab === 'schedule') navigateTo('schedule');
+      updateGCalBtn();
+      setTimeout(() => { navigateTo('schedule'); }, 300);
     },
   });
   gisInited = true;
@@ -1303,8 +1303,8 @@ function authorizeGCal() {
 // 讀取 Google Calendar 事件
 async function loadGCalEvents() {
   const now = new Date();
-  const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-  const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
+  const timeMin = new Date(now.getFullYear(), now.getMonth() - 6, 1).toISOString();
+  const timeMax = new Date(now.getFullYear(), now.getMonth() + 6, 0).toISOString();
   try {
     const res = await gapi.client.calendar.events.list({
       calendarId: GCAL_CONFIG.CALENDAR_ID,
@@ -1427,7 +1427,7 @@ function openGCalSetupModal() {
         <div style="font-size:11px;font-weight:700;color:var(--gcal);margin-bottom:6px;">STEP 3 — 建立 OAuth 用戶端 ID</div>
         <div style="font-size:11px;color:var(--text2);">
           1. 「建立憑證」→「OAuth 用戶端 ID」→ 類型選「網頁應用程式」<br>
-          2. 已授權的 JavaScript 來源填：<code style="background:var(--surface2);padding:1px 5px;border-radius:2px;">http://localhost:8080</code>（或你開啟檔案的網址）<br>
+          2. 已授權的 JavaScript 來源填：<code style="background:var(--surface2);padding:1px 5px;border-radius:2px;">https://mujie999999-collab.github.io</code><br>
           3. 複製用戶端 ID（數字-abc.apps.googleusercontent.com），貼到下方
         </div>
       </div>
@@ -1506,7 +1506,8 @@ function initGapiFromConfig() {
               gcalAuthorized = true;
               showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
               await loadGCalEvents();
-              if (currentTab === 'schedule') navigateTo('schedule');
+              updateGCalBtn();
+              setTimeout(() => { navigateTo('schedule'); }, 300);
             },
           });
           gisInited = true;
