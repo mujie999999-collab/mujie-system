@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沐頡景觀設計｜專案管理系統</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0c110e;
+  --surface: #131a15;
+  --surface2: #192010;
+  --surface3: #1f2a20;
+  --border: #273029;
+  --border2: #3a4e3d;
+  --sage: #4e9c5e;
+  --sage2: #6db87e;
+  --sage3: #a0d4ac;
+  --sage-pale: rgba(78,156,94,0.12);
+  --sage-glow: rgba(78,156,94,0.2);
+  --earth: #c49a5a;
+  --earth2: #ddb87a;
+  --earth-pale: rgba(196,154,90,0.13);
+  --blue: #4a8fc4;
+  --blue-pale: rgba(74,143,196,0.13);
+  --gcal: #4285f4;
+  --gcal-pale: rgba(66,133,244,0.13);
+  --line-c: #06c755;
+  --line-pale: rgba(6,199,85,0.12);
+  --red: #e05c4a;
+  --red-pale: rgba(224,92,74,0.13);
+  --amber: #d4920a;
+  --amber-pale: rgba(212,146,10,0.13);
+  --text: #dde8de;
+  --text2: #8fa893;
+  --text3: #4e5e50;
+  --sidebar-w: 220px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+/* ── SCREENS ── */
+.screen{display:none;width:100%;height:100%;}
+.screen.active{display:flex;}
+
+/* ════════════════════════════
+   LOGIN
+════════════════════════════ */
+#screen-login{
+  align-items:center;justify-content:center;
+  background: radial-gradient(ellipse at 30% 40%, rgba(78,156,94,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 70%, rgba(196,154,90,0.05) 0%, transparent 50%),
+              var(--bg);
+  flex-direction:column;
+}
+.login-logo{
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:800;
+  letter-spacing:4px;color:var(--sage2);text-transform:uppercase;
+  margin-bottom:6px;
+}
+.login-sub{font-size:11px;color:var(--text3);letter-spacing:2px;margin-bottom:40px;font-family:'DM Mono',monospace;}
+.login-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:32px 36px;width:360px;max-width:92vw;
+}
+.login-title{font-size:18px;font-weight:700;margin-bottom:6px;}
+.login-desc{font-size:12px;color:var(--text3);margin-bottom:24px;}
+.user-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.user-btn{
+  padding:12px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface3);cursor:pointer;transition:all 0.15s;text-align:left;
+}
+.user-btn:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-1px);}
+.user-btn.selected{border-color:var(--sage);background:var(--sage-pale);box-shadow:0 0 0 1px var(--sage);}
+.user-btn.selected-earth{border-color:var(--earth);background:var(--earth-pale);box-shadow:0 0 0 1px var(--earth);}
+.ub-dept{font-size:9px;letter-spacing:2px;margin-bottom:3px;text-transform:uppercase;}
+.ub-name{font-size:13px;font-weight:700;}
+.ub-title{font-size:10px;color:var(--text3);margin-top:1px;}
+.login-btn{
+  width:100%;padding:13px;border-radius:6px;border:none;
+  background:var(--sage);color:#fff;font-family:'Noto Sans TC',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;
+  opacity:0.4;pointer-events:none;
+}
+.login-btn.ready{opacity:1;pointer-events:auto;}
+.login-btn.ready:hover{background:var(--sage2);transform:translateY(-1px);}
+
+/* ════════════════════════════
+   APP SHELL
+════════════════════════════ */
+#screen-app{flex-direction:row;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;
+}
+.sb-logo{
+  padding:20px 18px 16px;border-bottom:1px solid var(--border);
+}
+.sb-logo-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--sage2);letter-spacing:1px;}
+.sb-logo-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;}
+.sb-user{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-avatar{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+}
+.sb-user-name{font-size:13px;font-weight:700;}
+.sb-user-role{font-size:10px;color:var(--text3);}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+.nav-section{font-size:9px;letter-spacing:2px;color:var(--text3);padding:8px 8px 4px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:5px;cursor:pointer;
+  font-size:13px;color:var(--text2);transition:all 0.12s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface3);color:var(--text);}
+.nav-item.active{background:var(--sage-pale);color:var(--sage2);border:1px solid rgba(78,156,94,0.2);}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{
+  margin-left:auto;font-size:10px;padding:1px 6px;border-radius:10px;
+  background:var(--red);color:#fff;font-family:'DM Mono',monospace;
+}
+.sb-notify{
+  padding:12px 14px;border-top:1px solid var(--border);font-size:11px;
+}
+.notify-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 8px;border-radius:3px;font-size:10px;font-weight:600;margin:2px;
+}
+.nc-line{background:var(--line-pale);color:var(--line-c);}
+.nc-email{background:var(--blue-pale);color:var(--blue);}
+.nc-gcal{background:var(--gcal-pale);color:var(--gcal);}
+
+/* MAIN CONTENT */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{
+  padding:0 24px;height:54px;flex-shrink:0;
+  border-bottom:1px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.topbar-title{font-size:16px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.tb-btn{
+  padding:6px 14px;border-radius:4px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:12px;cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif;transition:all 0.12s;
+}
+.tb-btn:hover{border-color:var(--border2);color:var(--text);}
+.tb-btn.primary{background:var(--sage);border-color:var(--sage);color:#fff;}
+.tb-btn.primary:hover{background:var(--sage2);}
+
+.content{flex:1;overflow-y:auto;padding:24px;}
+
+/* ── TAB PAGES ── */
+.tab-page{display:none;}
+.tab-page.active{display:block;}
+
+/* ── DASHBOARD ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+@media(max-width:800px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:16px 18px;
+}
+.sc-label{font-size:11px;color:var(--text3);margin-bottom:8px;letter-spacing:0.5px;}
+.sc-val{font-size:28px;font-weight:900;font-family:'Syne',sans-serif;line-height:1;}
+.sc-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.sc-bar{height:3px;border-radius:2px;margin-top:10px;background:var(--border);}
+.sc-bar-fill{height:100%;border-radius:2px;transition:width 1s ease;}
+
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr;}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.card-header{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:13px;font-weight:700;}
+.card-body{padding:16px 18px;}
+
+/* project list */
+.proj-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.proj-item:last-child{border-bottom:none;}
+.proj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.proj-info{flex:1;min-width:0;}
+.proj-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.proj-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.proj-status{
+  font-size:10px;padding:2px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0;font-weight:600;
+}
+.ps-active{background:var(--sage-pale);color:var(--sage2);}
+.ps-warn{background:var(--amber-pale);color:var(--amber);}
+.ps-done{background:var(--surface3);color:var(--text3);}
+.ps-red{background:var(--red-pale);color:var(--red);}
+
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.prog-label{font-size:12px;width:70px;flex-shrink:0;}
+.prog-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+.prog-pct{font-size:11px;color:var(--text3);width:36px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;}
+
+/* notice list */
+.notice-item{
+  display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);
+}
+.notice-item:last-child{border-bottom:none;}
+.ni-dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.ni-text{font-size:12px;color:var(--text2);line-height:1.5;}
+.ni-time{font-size:10px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;}
+
+/* ── SCHEDULE ── */
+.sched-toolbar{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;
+}
+.st-month{font-size:16px;font-weight:700;}
+.st-nav{
+  width:30px;height:30px;border-radius:4px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all 0.12s;
+}
+.st-nav:hover{border-color:var(--border2);color:var(--text);}
+.view-tabs{display:flex;gap:2px;margin-left:auto;}
+.vt-btn{
+  padding:5px 12px;border-radius:3px;border:none;font-size:12px;cursor:pointer;
+  background:transparent;color:var(--text3);font-family:'Noto Sans TC',sans-serif;transition:all 0.12s;
+}
+.vt-btn.active{background:var(--surface3);color:var(--text);}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);}
+.cal-head{background:var(--surface2);padding:8px 4px;text-align:center;font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
+.cal-cell{
+  background:var(--surface);min-height:80px;padding:6px;position:relative;
+  cursor:pointer;transition:background 0.1s;
+}
+.cal-cell:hover{background:var(--surface3);}
+.cal-cell.today{background:rgba(78,156,94,0.06);border:1px solid rgba(78,156,94,0.25);}
+.cal-cell.other-month .cal-day{color:var(--text3);}
+.cal-day{font-size:11px;font-weight:600;margin-bottom:4px;font-family:'DM Mono',monospace;}
+.cal-event{
+  font-size:10px;padding:2px 5px;border-radius:2px;margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;cursor:pointer;
+}
+.ce-sage{background:rgba(78,156,94,0.2);color:var(--sage3);}
+.ce-earth{background:rgba(196,154,90,0.2);color:var(--earth2);}
+.ce-blue{background:rgba(74,143,196,0.2);color:#7ab4e0;}
+.ce-red{background:rgba(224,92,74,0.2);color:#f08070;}
+.ce-gcal{background:rgba(66,133,244,0.2);color:#82b1ff;}
+
+/* gantt */
+.gantt-wrap{overflow-x:auto;}
+.gantt-table{width:100%;border-collapse:collapse;font-size:12px;}
+.gantt-table th{
+  background:var(--surface2);color:var(--text3);padding:8px 12px;
+  text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;
+}
+.gantt-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.gantt-table tr:hover td{background:var(--surface3);}
+.g-bar-wrap{width:200px;}
+.g-bar{height:14px;background:var(--border);border-radius:3px;overflow:hidden;}
+.g-fill{height:100%;border-radius:3px;}
+.g-pct{font-size:10px;color:var(--text3);margin-left:6px;font-family:'DM Mono',monospace;}
+
+/* ── RESOURCE ── */
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.member-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;
+}
+.mc-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mc-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.mc-name{font-size:14px;font-weight:700;}
+.mc-role{font-size:10px;color:var(--text3);margin-top:1px;}
+.mc-status{
+  display:inline-block;font-size:10px;padding:2px 8px;border-radius:2px;font-weight:600;
+}
+.ms-onsite{background:var(--sage-pale);color:var(--sage2);}
+.ms-office{background:var(--blue-pale);color:var(--blue);}
+.ms-off{background:var(--surface3);color:var(--text3);}
+.mc-site{font-size:11px;color:var(--text2);margin-top:8px;}
+
+/* weather widget */
+.weather-bar{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.wb-day{text-align:center;min-width:50px;}
+.wb-icon{font-size:20px;}
+.wb-temp{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;}
+.wb-label{font-size:9px;color:var(--text3);}
+.wb-warn{
+  margin-left:auto;background:var(--amber-pale);border:1px solid rgba(212,146,10,0.3);
+  color:var(--amber);font-size:11px;padding:6px 12px;border-radius:4px;
+}
+
+/* ── NOTIFICATION PANEL ── */
+.notif-list{}
+.notif-item{
+  display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background 0.1s;border-radius:4px;
+}
+.notif-item:hover{background:var(--surface3);padding-left:8px;padding-right:8px;}
+.ni-badge{
+  width:34px;height:34px;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;
+}
+.nib-sage{background:var(--sage-pale);}
+.nib-amber{background:var(--amber-pale);}
+.nib-red{background:var(--red-pale);}
+.nib-gcal{background:var(--gcal-pale);}
+.nib-line{background:var(--line-pale);}
+.notif-body{flex:1;}
+.notif-title{font-size:13px;font-weight:600;}
+.notif-desc{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;}
+.notif-time{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;padding-top:2px;}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);flex-shrink:0;margin-top:6px;}
+
+/* tooltip/modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  z-index:100;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  padding:24px;width:440px;max-width:92vw;max-height:80vh;overflow-y:auto;
+  animation:fadeSlide 0.2s ease;
+}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-size:16px;font-weight:700;}
+.modal-close{
+  width:28px;height:28px;border-radius:4px;border:none;background:var(--surface3);
+  color:var(--text3);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
+}
+.modal-close:hover{color:var(--text);}
+.mf-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.mf-label{font-size:10px;color:var(--text3);letter-spacing:1px;font-family:'DM Mono',monospace;}
+.mf-val{font-size:13px;color:var(--text);}
+.mf-chips{display:flex;flex-wrap:wrap;gap:4px;}
+
+/* chip */
+.chip{
+  font-size:10px;font-weight:600;padding:2px 8px;border-radius:2px;
+  display:inline-block;
+}
+.ch-sage{background:var(--sage-pale);color:var(--sage2);}
+.ch-earth{background:var(--earth-pale);color:var(--earth2);}
+.ch-blue{background:var(--blue-pale);color:var(--blue);}
+.ch-red{background:var(--red-pale);color:var(--red);}
+.ch-amber{background:var(--amber-pale);color:var(--amber);}
+.ch-line{background:var(--line-pale);color:var(--line-c);}
+.ch-gcal{background:var(--gcal-pale);color:var(--gcal);}
+.ch-dim{background:var(--surface3);color:var(--text3);}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-logo">沐頡景觀設計</div>
+  <div class="login-sub">MUJIE LANDSCAPE · PROJECT SYSTEM</div>
+  <div class="login-box">
+    <div class="login-title">選擇帳號登入</div>
+    <div class="login-desc">請選擇您的帳號以進入系統</div>
+    <div class="user-grid" id="userGrid">
+      <div class="user-btn" data-user="kuo" onclick="selectUser(this)">
+        <div class="ub-dept" style="color:var(--earth);">設計部</div>
+        <div class="ub-name">郭菊美</div>
+        <div class="ub-title">設計總監</div>
+      </div>
+      <div class="user-btn" data-user="tsai-h" onclick="selectUser(this)">
+        <div class="ub-dept" style="color:var(--earth);">設計部</div>
+        <div class="ub-name">蔡馨惠</div>
+        <div class="ub-title">設計師</div>
+      </div>
+      <div class="user-btn" data-user="tsai-c" onclick="selectUser(this)">
+        <div class="ub-dept" style="color:var(--sage2);">工程部</div>
+        <div class="ub-name">蔡鎮隆</div>
+        <div class="ub-title">工程部經理</div>
+      </div>
+      <div class="user-btn" data-user="chiu" onclick="selectUser(this)">
+        <div class="ub-dept" style="color:var(--sage2);">工程部</div>
+        <div class="ub-name">邱垂銨</div>
+        <div class="ub-title">工程部主任</div>
+      </div>
+      <div class="user-btn" data-user="meng" onclick="selectUser(this)" style="grid-column:1/-1;">
+        <div class="ub-dept" style="color:var(--sage2);">工程部</div>
+        <div class="ub-name">阿孟</div>
+        <div class="ub-title">工程部組長</div>
+      </div>
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">進入系統</button>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="screen-app" class="screen">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">沐頡景觀</div>
+      <div class="sb-logo-sub">MUJIE LANDSCAPE</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar"></div>
+      <div>
+        <div class="sb-user-name" id="sbName"></div>
+        <div class="sb-user-role" id="sbRole"></div>
+      </div>
+    </div>
+    <nav class="sb-nav" id="sbNav"></nav>
+    <div class="sb-notify">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:6px;">通知管道</div>
+      <div id="sbNotifyChips"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topTitle">儀表板</div>
+      <div class="topbar-right">
+        <button class="tb-btn" onclick="showNotifModal()">🔔 通知 <span id="notifCount" style="color:var(--red);font-size:10px;"></span></button>
+        <button class="tb-btn" onclick="doLogout()">登出</button>
+      </div>
+    </div>
+    <div class="content" id="mainContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+//  DATA
+// ═══════════════════════════════════
+const USERS = {
+  'kuo':    { name:'郭菊美', role:'設計總監', dept:'設計部', icon:'🌿', color:'earth',
+              notify:['line','email','gcal'],
+              nav:['dashboard','schedule','projects','resource','reports','notifications'],
+              notifyContent:'全案進度・財務・預算警示' },
+  'tsai-h': { name:'蔡馨惠', role:'設計師', dept:'設計部', icon:'✏️', color:'earth',
+              notify:['line','email','gcal'],
+              nav:['dashboard','schedule','projects','notifications'],
+              notifyContent:'設計任務・業務・排程・工程進度' },
+  'tsai-c': { name:'蔡鎮隆', role:'工程部經理', dept:'工程部', icon:'⚙️', color:'sage',
+              notify:['line','email','gcal'],
+              nav:['dashboard','schedule','projects','resource','reports','notifications'],
+              notifyContent:'全案進度・資源・預算異常' },
+  'chiu':   { name:'邱垂銨', role:'工程部主任', dept:'工程部', icon:'🔧', color:'sage',
+              notify:['line','gcal'],
+              nav:['dashboard','schedule','projects','resource','notifications'],
+              notifyContent:'負責案件・工地排程・人力' },
+  'meng':   { name:'阿孟', role:'工程部組長', dept:'工程部', icon:'🏗️', color:'sage',
+              notify:['line','gcal'],
+              nav:['dashboard','schedule','resource','notifications'],
+              notifyContent:'※ 只收負責工地事項' },
+};
+
+const PROJECTS = [
+  { id:1, name:'翠嶺莊園 景觀改造', client:'翠嶺開發', status:'active', pct:68, budget:2800000, spent:1960000, color:'#4e9c5e', lead:'蔡鎮隆', site:'台中市北屯區', due:'2025-08-15' },
+  { id:2, name:'逸境會館 庭院設計', client:'逸境休閒', status:'active', pct:35, budget:1500000, spent:560000, color:'#c49a5a', lead:'邱垂銨', site:'南投縣埔里鎮', due:'2025-09-30' },
+  { id:3, name:'綠蔭社區 公共景觀', client:'綠蔭建設', status:'warn', pct:91, budget:3200000, spent:2960000, color:'#d4920a', lead:'蔡鎮隆', site:'台中市西屯區', due:'2025-07-01' },
+  { id:4, name:'晨曦工業園區', client:'晨曦實業', status:'active', pct:52, budget:1800000, spent:950000, color:'#4a8fc4', lead:'邱垂銨', site:'台中市工業區', due:'2025-10-20' },
+  { id:5, name:'松鶴渡假村', client:'松鶴集團', status:'done', pct:100, budget:4200000, spent:4100000, color:'#7a7a7a', lead:'蔡鎮隆', site:'台中市和平區', due:'2025-05-30' },
+];
+
+const MENG_PROJECTS = [
+  { id:3, name:'綠蔭社區 公共景觀', client:'綠蔭建設', status:'warn', pct:91, budget:3200000, spent:2960000, color:'#d4920a', lead:'阿孟', site:'台中市西屯區', due:'2025-07-01' },
+];
+
+const NOTIFICATIONS = [
+  { icon:'⚠️', cls:'nib-red',   title:'預算警示：綠蔭社區',  desc:'執行率已達 92.5%，超過警戒值 90%', time:'10分鐘前', roles:['kuo','tsai-c'], unread:true },
+  { icon:'📅', cls:'nib-gcal',  title:'Google Calendar 同步', desc:'翠嶺莊園 - 植栽進場工項已寫入日曆', time:'1小時前', roles:['kuo','tsai-h','tsai-c','chiu'], unread:true },
+  { icon:'💬', cls:'nib-line',  title:'Line Bot 推播',        desc:'今日工地：綠蔭社區 鋪面工程收尾', time:'今日 08:00', roles:['meng'], unread:true },
+  { icon:'🔔', cls:'nib-sage',  title:'排程提醒',             desc:'逸境會館 設計圖交付截止日 剩 3 天', time:'今日 09:00', roles:['kuo','tsai-h','tsai-c','chiu'], unread:false },
+  { icon:'🏗️', cls:'nib-amber', title:'工地進度更新',         desc:'晨曦工業園區 完成度更新至 52%', time:'昨日 17:30', roles:['kuo','tsai-c','chiu'], unread:false },
+  { icon:'📧', cls:'nib-line',  title:'Email 備援通知',       desc:'本週排程預覽已寄至 mujie999999@gmail.com', time:'昨日 08:00', roles:['kuo','tsai-h','tsai-c'], unread:false },
+];
+
+const NAV_LABELS = {
+  dashboard:     { icon:'◈', label:'儀表板' },
+  schedule:      { icon:'◉', label:'排程日曆' },
+  projects:      { icon:'◧', label:'專案進度' },
+  resource:      { icon:'◫', label:'人機物料' },
+  reports:       { icon:'◪', label:'管理報表' },
+  notifications: { icon:'◐', label:'通知中心' },
+};
+
+// ═══════════════════════════════════
+//  STATE
+// ═══════════════════════════════════
+let currentUser = null;
+let currentTab = 'dashboard';
+let selectedBtn = null;
+
+// ═══════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════
+function selectUser(btn) {
+  document.querySelectorAll('.user-btn').forEach(b => b.classList.remove('selected','selected-earth'));
+  const uid = btn.dataset.user;
+  const u = USERS[uid];
+  btn.classList.add(u.color === 'earth' ? 'selected-earth' : 'selected');
+  selectedBtn = uid;
+  document.getElementById('loginBtn').classList.add('ready');
+}
+function doLogin() {
+  if (!selectedBtn) return;
+  currentUser = selectedBtn;
+  buildApp();
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  navigateTo('dashboard');
+}
+function doLogout() {
+  currentUser = null; selectedBtn = null;
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.remove('selected','selected-earth'));
+  document.getElementById('loginBtn').classList.remove('ready');
+}
+
+// ═══════════════════════════════════
+//  BUILD APP SHELL
+// ═══════════════════════════════════
+function buildApp() {
+  const u = USERS[currentUser];
+  // avatar
+  const av = document.getElementById('sbAvatar');
+  av.textContent = u.icon;
+  av.style.background = u.color==='earth' ? 'var(--earth-pale)' : 'var(--sage-pale)';
+  document.getElementById('sbName').textContent = u.name;
+  document.getElementById('sbRole').textContent = u.dept + ' · ' + u.role;
+  // nav
+  const nav = document.getElementById('sbNav');
+  nav.innerHTML = '';
+  const sectionMap = {
+    dashboard:'OVERVIEW', schedule:'SCHEDULE', projects:'PROJECTS',
+    resource:'RESOURCE', reports:'REPORTS', notifications:'NOTIFY'
+  };
+  let lastSection = '';
+  u.nav.forEach(key => {
+    const sec = sectionMap[key];
+    if (sec !== lastSection) {
+      nav.innerHTML += `<div class="nav-section">${sec}</div>`;
+      lastSection = sec;
+    }
+    const badge = key==='notifications' ? ' <span class="nav-badge">'+getUnreadCount()+'</span>' : '';
+    nav.innerHTML += `<div class="nav-item" data-tab="${key}" onclick="navigateTo('${key}')"><span class="nav-icon">${NAV_LABELS[key].icon}</span>${NAV_LABELS[key].label}${badge}</div>`;
+  });
+  // notify chips
+  const chips = document.getElementById('sbNotifyChips');
+  chips.innerHTML = '';
+  u.notify.forEach(n => {
+    const map = {line:'💬 Line','email':'📧 Email','gcal':'📅 GCal'};
+    const cls = {line:'nc-line','email':'nc-email','gcal':'nc-gcal'};
+    chips.innerHTML += `<span class="notify-chip ${cls[n]}">${map[n]}</span>`;
+  });
+  // notif count
+  document.getElementById('notifCount').textContent = '(' + getUnreadCount() + ')';
+}
+
+function getUnreadCount() {
+  return NOTIFICATIONS.filter(n => n.unread && n.roles.includes(currentUser)).length;
+}
+
+// ═══════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════
+function navigateTo(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.tab === tab);
+  });
+  document.getElementById('topTitle').textContent = NAV_LABELS[tab]?.label || '';
+  const content = document.getElementById('mainContent');
+  content.innerHTML = '';
+  const renderers = {
+    dashboard: renderDashboard,
+    schedule:  renderSchedule,
+    projects:  renderProjects,
+    resource:  renderResource,
+    reports:   renderReports,
+    notifications: renderNotifications,
+  };
+  if (renderers[tab]) renderers[tab](content);
+}
+
+// ═══════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════
+function renderDashboard(el) {
+  const u = USERS[currentUser];
+  const projects = currentUser === 'meng' ? MENG_PROJECTS : PROJECTS;
+  const active = projects.filter(p=>p.status==='active'||p.status==='warn').length;
+  const warn = projects.filter(p=>p.status==='warn').length;
+  const totalBudget = projects.reduce((a,p)=>a+p.budget,0);
+  const totalSpent = projects.reduce((a,p)=>a+p.spent,0);
+  const pct = Math.round(totalSpent/totalBudget*100);
+
+  el.innerHTML = `
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="sc-label">進行中案件</div>
+      <div class="sc-val" style="color:var(--sage2);">${active}</div>
+      <div class="sc-sub">本月新增 1 件</div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${active*20}%;background:var(--sage);"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">預算執行率</div>
+      <div class="sc-val" style="color:${pct>=90?'var(--red)':'var(--earth2)'};">${pct}%</div>
+      <div class="sc-sub">${pct>=90?'⚠ 超過警戒值 90%':'正常範圍'}</div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${pct}%;background:${pct>=90?'var(--red)':'var(--amber)'};"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">待處理通知</div>
+      <div class="sc-val" style="color:var(--red);">${getUnreadCount()}</div>
+      <div class="sc-sub">點擊通知中心查看</div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${getUnreadCount()*25}%;background:var(--red);"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">本週工地天數</div>
+      <div class="sc-val" style="color:var(--blue);">5</div>
+      <div class="sc-sub">天氣良好 ☀️</div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:71%;background:var(--blue);"></div></div>
+    </div>
+  </div>
+  <div class="dash-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">案件進度總覽</div>
+        <button class="tb-btn" onclick="navigateTo('projects')">查看全部</button>
+      </div>
+      <div class="card-body">
+        ${projects.map(p=>`
+        <div class="proj-item" onclick="openProjectModal(${p.id})" style="cursor:pointer;">
+          <div class="proj-dot" style="background:${p.color};"></div>
+          <div class="proj-info">
+            <div class="proj-name">${p.name}</div>
+            <div class="proj-meta">${p.lead} · 截止 ${p.due}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);">${p.pct}%</div>
+            <span class="proj-status ${p.status==='warn'?'ps-red':p.status==='done'?'ps-done':'ps-active'}">${p.status==='warn'?'預算警示':p.status==='done'?'完成':'進行中'}</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">各案完成度</div></div>
+        <div class="card-body">
+          ${projects.map(p=>`
+          <div class="prog-row">
+            <div class="prog-label" style="color:var(--text2);font-size:11px;">${p.name.substring(0,6)}…</div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${p.pct}%;background:${p.color};"></div></div>
+            <div class="prog-pct">${p.pct}%</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">最新通知</div></div>
+        <div class="card-body">
+          ${NOTIFICATIONS.filter(n=>n.roles.includes(currentUser)).slice(0,3).map(n=>`
+          <div class="notice-item">
+            <div class="ni-dot" style="background:${n.unread?'var(--sage)':'var(--text3)'};"></div>
+            <div>
+              <div class="ni-text">${n.title}</div>
+              <div class="ni-time">${n.time}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════
+//  SCHEDULE
+// ═══════════════════════════════════
+const MONTHS = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+let calYear = 2025, calMonth = 5; // June 2025
+let calView = 'month';
+
+const CAL_EVENTS = [
+  { date:'2025-06-02', text:'翠嶺莊園 植栽進場', cls:'ce-sage', proj:1 },
+  { date:'2025-06-02', text:'GCal 同步', cls:'ce-gcal', proj:1 },
+  { date:'2025-06-05', text:'逸境會館 設計提案', cls:'ce-earth', proj:2 },
+  { date:'2025-06-09', text:'綠蔭社區 鋪面收尾', cls:'ce-red', proj:3 },
+  { date:'2025-06-10', text:'翠嶺莊園 水電配管', cls:'ce-sage', proj:1 },
+  { date:'2025-06-12', text:'晨曦工業 種植作業', cls:'ce-blue', proj:4 },
+  { date:'2025-06-16', text:'逸境會館 圖面交付', cls:'ce-earth', proj:2 },
+  { date:'2025-06-17', text:'GCal 同步', cls:'ce-gcal', proj:2 },
+  { date:'2025-06-19', text:'綠蔭社區 驗收', cls:'ce-red', proj:3 },
+  { date:'2025-06-23', text:'翠嶺莊園 燈具安裝', cls:'ce-sage', proj:1 },
+  { date:'2025-06-26', text:'晨曦工業 收尾', cls:'ce-blue', proj:4 },
+  { date:'2025-06-30', text:'逸境會館 截止日', cls:'ce-earth', proj:2 },
+];
+
+const MENG_CAL_EVENTS = CAL_EVENTS.filter(e => e.proj===3);
+
+function getCalEvents() {
+  return currentUser==='meng' ? MENG_CAL_EVENTS : CAL_EVENTS;
+}
+
+function renderSchedule(el) {
+  const canEdit = ['kuo','tsai-h','tsai-c','chiu','meng'].includes(currentUser);
+  const isDesign = ['kuo','tsai-h'].includes(currentUser);
+  el.innerHTML = `
+  <div class="weather-bar">
+    ${['一','二','三','四','五','六','日'].map((d,i)=>`
+    <div class="wb-day">
+      <div class="wb-icon">${['☀️','☀️','🌤️','🌧️','⛅','☀️','☀️'][i]}</div>
+      <div class="wb-temp">${[32,33,30,26,28,31,32][i]}°</div>
+      <div class="wb-label">${d}</div>
+    </div>`).join('')}
+    <div class="wb-warn">⚠ 週四降雨 建議調整戶外工項</div>
+  </div>
+  <div class="sched-toolbar">
+    <button class="st-nav" onclick="changeMonth(-1)">‹</button>
+    <div class="st-month">${calYear} 年 ${MONTHS[calMonth]}</div>
+    <button class="st-nav" onclick="changeMonth(1)">›</button>
+    ${canEdit?`<button class="tb-btn primary" onclick="openAddEvent()">＋ 新增工項</button>`:''}
+    <button class="tb-btn" id="gcalBtn" onclick="handleGCalBtn()" style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:14px;">📅</span>
+      <span id="gcalBtnText">連結 Google Calendar</span>
+    </button>
+    <div class="view-tabs">
+      <button class="vt-btn ${calView==='month'?'active':''}" onclick="switchView('month')">月</button>
+      <button class="vt-btn ${calView==='gantt'?'active':''}" onclick="switchView('gantt')">甘特</button>
+    </div>
+  </div>
+  <div id="calBody"></div>`;
+  renderCalBody();
+}
+
+function renderCalBody() {
+  const el = document.getElementById('calBody');
+  if (!el) return;
+  if (calView==='month') renderMonthView(el);
+  else renderGanttView(el);
+}
+
+function renderMonthView(el) {
+  const events = getCalEvents();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  let html = `<div class="cal-grid">`;
+  ['日','一','二','三','四','五','六'].forEach(d=>{html+=`<div class="cal-head">${d}</div>`;});
+  // prev month fill
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  for(let i=firstDay-1;i>=0;i--) {
+    html+=`<div class="cal-cell other-month"><div class="cal-day">${prevDays-i}</div></div>`;
+  }
+  for(let d=1;d<=daysInMonth;d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getDate()===d && today.getMonth()===calMonth && today.getFullYear()===calYear;
+    const dayEvents = events.filter(e=>e.date===dateStr);
+    html+=`<div class="cal-cell${isToday?' today':''}">
+      <div class="cal-day" style="${isToday?'color:var(--sage2);':''}">${d}</div>
+      ${dayEvents.map(e=>`<div class="cal-event ${e.cls}" onclick="event.stopPropagation();openProjectModal(${e.proj})">${e.text}</div>`).join('')}
+    </div>`;
+  }
+  // fill remainder
+  const total = firstDay + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total%7);
+  for(let i=1;i<=remaining;i++) html+=`<div class="cal-cell other-month"><div class="cal-day">${i}</div></div>`;
+  html+=`</div>`;
+  el.innerHTML = html;
+}
+
+function renderGanttView(el) {
+  const projects = currentUser==='meng' ? MENG_PROJECTS : PROJECTS;
+  el.innerHTML = `<div class="gantt-wrap"><table class="gantt-table">
+    <thead><tr><th>案件名稱</th><th>負責人</th><th>截止日</th><th>完成度</th><th>狀態</th></tr></thead>
+    <tbody>
+    ${projects.map(p=>`<tr onclick="openProjectModal(${p.id})" style="cursor:pointer;">
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};margin-right:8px;vertical-align:middle;"></span>${p.name}</td>
+      <td>${p.lead}</td>
+      <td style="font-family:'DM Mono',monospace;">${p.due}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="g-bar-wrap"><div class="g-bar"><div class="g-fill" style="width:${p.pct}%;background:${p.color};"></div></div></div>
+        <span class="g-pct">${p.pct}%</span>
+      </div></td>
+      <td><span class="proj-status ${p.status==='warn'?'ps-red':p.status==='done'?'ps-done':'ps-active'}">${p.status==='warn'?'預算警示':p.status==='done'?'完成':'進行中'}</span></td>
+    </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function changeMonth(d) {
+  calMonth+=d;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  document.querySelector('.st-month').textContent = `${calYear} 年 ${MONTHS[calMonth]}`;
+  renderCalBody();
+}
+
+function switchView(v) {
+  calView=v;
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.toggle('active',b.textContent===(v==='month'?'月':'甘特')));
+  renderCalBody();
+}
+
+function openAddEvent() {
+  openModal('新增工項', `
+    <div class="mf-row"><div class="mf-label">工項名稱</div><input style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;font-family:'Noto Sans TC',sans-serif;" placeholder="輸入工項名稱"></div>
+    <div class="mf-row"><div class="mf-label">所屬案件</div>
+      <select style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;font-family:'Noto Sans TC',sans-serif;">
+        ${(currentUser==='meng'?MENG_PROJECTS:PROJECTS).map(p=>`<option>${p.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="mf-row"><div class="mf-label">日期</div><input type="date" value="2025-06-15" style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:8px 12px;color:var(--text);font-size:13px;width:100%;font-family:'Noto Sans TC',sans-serif;"></div>
+    <div style="margin-top:4px;padding:10px 12px;background:var(--gcal-pale);border-radius:4px;border:1px solid rgba(66,133,244,0.2);font-size:11px;color:var(--gcal);">
+      📆 儲存後將自動同步至 Google Calendar
+    </div>
+    <button onclick="saveNewEvent()" style="margin-top:14px;width:100%;padding:11px;border-radius:5px;border:none;background:var(--sage);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">儲存並同步至 Google Calendar</button>
+  `);
+}
+
+// ═══════════════════════════════════
+//  PROJECTS
+// ═══════════════════════════════════
+function renderProjects(el) {
+  const projects = currentUser==='meng' ? MENG_PROJECTS : PROJECTS;
+  el.innerHTML = `
+  <div style="display:grid;gap:12px;">
+  ${projects.map(p=>`
+  <div class="card" style="border-left:3px solid ${p.color};cursor:pointer;" onclick="openProjectModal(${p.id})">
+    <div class="card-header">
+      <div>
+        <div style="font-size:15px;font-weight:700;">${p.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">${p.client} · ${p.site}</div>
+      </div>
+      <span class="proj-status ${p.status==='warn'?'ps-red':p.status==='done'?'ps-done':'ps-active'}">${p.status==='warn'?'預算警示':p.status==='done'?'完成':'進行中'}</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:14px;">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">負責人</div><div style="font-size:13px;">${p.lead}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">截止日</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${p.due}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">預算執行率</div><div style="font-size:13px;font-weight:700;color:${Math.round(p.spent/p.budget*100)>=90?'var(--red)':'var(--text)'};">${Math.round(p.spent/p.budget*100)}%${Math.round(p.spent/p.budget*100)>=90?' ⚠':''}</div></div>
+      </div>
+      <div class="prog-row" style="margin-bottom:0;">
+        <div style="font-size:11px;color:var(--text3);width:50px;">完成度</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p.pct}%;background:${p.color};"></div></div>
+        <div class="prog-pct">${p.pct}%</div>
+      </div>
+    </div>
+  </div>`).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════
+//  RESOURCE
+// ═══════════════════════════════════
+
+// 施工人員資料（可填寫實名，預設代號）
+const WORKERS = [
+  { id:'w1', code:'施工員A', name:'', role:'施工人員', icon:'👷', status:'onsite', site:'翠嶺莊園' },
+  { id:'w2', code:'施工員B', name:'', role:'施工人員', icon:'👷', status:'onsite', site:'綠蔭社區' },
+  { id:'w3', code:'施工員C', name:'', role:'施工人員', icon:'👷', status:'off',    site:'—' },
+];
+
+function getWorkerDisplay(w) {
+  return w.name.trim() !== '' ? w.name : w.code;
+}
+
+function renderResource(el) {
+  const fixedMembers = [
+    { name:'蔡鎮隆', role:'工程部經理', icon:'⚙️', status:'onsite', site:'綠蔭社區', color:'sage' },
+    { name:'邱垂銨', role:'工程部主任', icon:'🔧', status:'onsite', site:'翠嶺莊園', color:'sage' },
+    { name:'阿孟',   role:'工程部組長', icon:'🏗️', status:'onsite', site:'綠蔭社區', color:'sage' },
+  ];
+
+  const canEditWorker = ['kuo','tsai-c','chiu'].includes(currentUser);
+
+  const allDisplay = currentUser === 'meng'
+    ? fixedMembers.filter(m => m.site === '綠蔭社區')
+    : fixedMembers;
+
+  const workerDisplay = currentUser === 'meng'
+    ? WORKERS.filter(w => w.site === '綠蔭社區' || w.status === 'off')
+    : WORKERS;
+
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">今日人力配置</div>
+      <div style="font-size:11px;color:var(--text3);">2025年6月 · 天氣良好 ☀️</div>
+    </div>
+    ${canEditWorker ? `<button class="tb-btn primary" onclick="openWorkerManager()">✎ 編輯施工人員名單</button>` : ''}
+  </div>
+
+  <div style="font-size:10px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">SYSTEM USERS</div>
+  <div class="member-grid" style="margin-bottom:20px;">
+  ${allDisplay.map(m=>`
+  <div class="member-card">
+    <div class="mc-top">
+      <div class="mc-avatar" style="background:var(--sage-pale);">${m.icon}</div>
+      <div>
+        <div class="mc-name">${m.name}</div>
+        <div class="mc-role">${m.role}</div>
+      </div>
+    </div>
+    <div><span class="mc-status ms-onsite">出工中</span></div>
+    <div class="mc-site" style="margin-top:8px;">📍 ${m.site}</div>
+  </div>`).join('')}
+  </div>
+
+  <div style="font-size:10px;letter-spacing:2px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">FIELD WORKERS</div>
+  <div class="member-grid" id="workerGrid" style="margin-bottom:20px;">
+  ${workerDisplay.map(w => renderWorkerCard(w, canEditWorker)).join('')}
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">機具設備狀態</div></div>
+    <div class="card-body">
+      ${[['挖土機 A','翠嶺莊園','使用中','sage'],['挖土機 B','綠蔭社區','使用中','sage'],['堆高機','倉庫','待命','dim'],['噴霧灌溉車','晨曦工業','使用中','blue'],['工具車 1','翠嶺莊園','使用中','sage'],['工具車 2','倉庫','維修中','red']].map(([name,loc,status,c])=>`
+      <div class="proj-item">
+        <div class="proj-info"><div class="proj-name">${name}</div><div class="proj-meta">📍 ${loc}</div></div>
+        <span class="proj-status ${c==='sage'?'ps-active':c==='red'?'ps-red':'ps-done'}">${status}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderWorkerCard(w, canEdit) {
+  const displayName = getWorkerDisplay(w);
+  const isNamed = w.name.trim() !== '';
+  return `
+  <div class="member-card" style="border:1px solid ${isNamed ? 'var(--border2)' : 'var(--border)'};">
+    <div class="mc-top">
+      <div class="mc-avatar" style="background:var(--surface3);position:relative;">
+        ${w.icon}
+        ${!isNamed ? `<div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--amber);border:1px solid var(--bg);"></div>` : ''}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="mc-name" style="color:${isNamed?'var(--text)':'var(--text3)'};">${displayName}</div>
+        <div class="mc-role" style="color:${isNamed?'var(--text3)':'var(--amber)'};">${isNamed ? w.role : '⚠ 待填寫姓名'}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+      <span class="mc-status ${w.status==='onsite'?'ms-onsite':'ms-off'}">${w.status==='onsite'?'出工中':'休假'}</span>
+      ${canEdit ? `<button onclick="openInlineEdit('${w.id}')" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'Noto Sans TC',sans-serif;">✎ 填寫</button>` : ''}
+    </div>
+    ${w.status==='onsite' ? `<div class="mc-site" style="margin-top:8px;">📍 ${w.site}</div>` : ''}
+  </div>`;
+}
+
+function openInlineEdit(wid) {
+  const w = WORKERS.find(x => x.id === wid);
+  if (!w) return;
+  openModal(`填寫施工人員姓名 — ${w.code}`, `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">代號</div>
+      <div style="font-size:15px;font-weight:700;">${w.code}</div>
+    </div>
+    <div class="mf-row">
+      <div class="mf-label">實際姓名</div>
+      <input id="workerNameInput" value="${w.name}"
+        placeholder="請輸入姓名（例：林建宏）"
+        style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:10px 12px;color:var(--text);font-size:14px;width:100%;font-family:'Noto Sans TC',sans-serif;outline:none;"
+        onkeydown="if(event.key==='Enter') saveWorkerName('${wid}')">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px;">
+      <div class="mf-row" style="flex:1;">
+        <div class="mf-label">工地</div>
+        <select id="workerSiteInput" style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:13px;width:100%;font-family:'Noto Sans TC',sans-serif;">
+          ${['翠嶺莊園','逸境會館','綠蔭社區','晨曦工業','—'].map(s=>`<option ${w.site===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="mf-row" style="flex:1;">
+        <div class="mf-label">狀態</div>
+        <select id="workerStatusInput" style="background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:13px;width:100%;font-family:'Noto Sans TC',sans-serif;">
+          <option value="onsite" ${w.status==='onsite'?'selected':''}>出工中</option>
+          <option value="off" ${w.status==='off'?'selected':''}>休假</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="saveWorkerName('${wid}')"
+      style="margin-top:14px;width:100%;padding:11px;border-radius:5px;border:none;background:var(--sage);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">
+      儲存
+    </button>
+  `);
+  setTimeout(()=>{ const inp = document.getElementById('workerNameInput'); if(inp) inp.focus(); }, 100);
+}
+
+function saveWorkerName(wid) {
+  const w = WORKERS.find(x => x.id === wid);
+  if (!w) return;
+  const nameEl   = document.getElementById('workerNameInput');
+  const siteEl   = document.getElementById('workerSiteInput');
+  const statusEl = document.getElementById('workerStatusInput');
+  if (nameEl)   w.name   = nameEl.value.trim();
+  if (siteEl)   w.site   = siteEl.value;
+  if (statusEl) w.status = statusEl.value;
+  closeModalDirect();
+  showToast(`已儲存：${w.code} → ${w.name || w.code}`);
+  // 重新渲染 resource 頁面
+  navigateTo('resource');
+}
+
+function openWorkerManager() {
+  openModal('施工人員名單管理', `
+    <div style="margin-bottom:14px;font-size:12px;color:var(--text3);">
+      點擊各欄位直接修改，完成後按儲存全部。
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;" id="workerMgrTable">
+      <thead>
+        <tr>
+          <th style="background:var(--surface2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:1px;">代號</th>
+          <th style="background:var(--surface2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:1px;">實際姓名</th>
+          <th style="background:var(--surface2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:1px;">工地</th>
+          <th style="background:var(--surface2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:1px;">狀態</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${WORKERS.map(w=>`
+        <tr>
+          <td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text3);">${w.code}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid var(--border);">
+            <input data-wid="${w.id}" data-field="name" value="${w.name}" placeholder="填入姓名"
+              style="background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;color:var(--text);font-size:12px;width:100%;font-family:'Noto Sans TC',sans-serif;">
+          </td>
+          <td style="padding:6px 10px;border-bottom:1px solid var(--border);">
+            <select data-wid="${w.id}" data-field="site"
+              style="background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;color:var(--text);font-size:12px;font-family:'Noto Sans TC',sans-serif;">
+              ${['翠嶺莊園','逸境會館','綠蔭社區','晨曦工業','—'].map(s=>`<option ${w.site===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </td>
+          <td style="padding:6px 10px;border-bottom:1px solid var(--border);">
+            <select data-wid="${w.id}" data-field="status"
+              style="background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:5px 8px;color:var(--text);font-size:12px;font-family:'Noto Sans TC',sans-serif;">
+              <option value="onsite" ${w.status==='onsite'?'selected':''}>出工中</option>
+              <option value="off" ${w.status==='off'?'selected':''}>休假</option>
+            </select>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <button onclick="saveAllWorkers()"
+      style="margin-top:16px;width:100%;padding:11px;border-radius:5px;border:none;background:var(--sage);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">
+      儲存全部
+    </button>
+  `);
+}
+
+function saveAllWorkers() {
+  const table = document.getElementById('workerMgrTable');
+  if (!table) return;
+  table.querySelectorAll('input[data-wid], select[data-wid]').forEach(inp => {
+    const w = WORKERS.find(x => x.id === inp.dataset.wid);
+    if (w) w[inp.dataset.field] = inp.value.trim !== undefined ? inp.value.trim() : inp.value;
+  });
+  closeModalDirect();
+  showToast('施工人員名單已儲存 ✓');
+  navigateTo('resource');
+}
+
+// ═══════════════════════════════════
+//  REPORTS
+// ═══════════════════════════════════
+function renderReports(el) {
+  el.innerHTML = `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">預算執行總表</div></div>
+      <div class="card-body">
+        ${PROJECTS.map(p=>{
+          const r=Math.round(p.spent/p.budget*100);
+          return `<div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <div style="font-size:12px;">${p.name.substring(0,8)}</div>
+              <div style="font-size:11px;font-family:'DM Mono',monospace;color:${r>=90?'var(--red)':'var(--text3)'};">${r}%${r>=90?' ⚠':''}</div>
+            </div>
+            <div class="g-bar"><div class="g-fill" style="width:${r}%;background:${r>=90?'var(--red)':p.color};"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">月度統計</div></div>
+      <div class="card-body">
+        ${[['總承接案件','5 件'],['完成案件','1 件'],['進行中案件','4 件'],['本月工地天數','22 天'],['點工調用次數','8 次'],['資源衝突偵測','2 次']].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:12px;color:var(--text3);">${k}</div>
+          <div style="font-size:13px;font-weight:600;">${v}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Google Calendar 同步狀態</div></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+        ${Object.entries(USERS).map(([id,u])=>`
+        <div style="padding:10px 14px;background:var(--surface3);border-radius:5px;border:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${u.icon} ${u.name}</div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">${u.dept}</div>
+          ${u.notify.includes('gcal')?
+            `<span style="font-size:10px;padding:2px 7px;border-radius:2px;background:var(--gcal-pale);color:var(--gcal);font-weight:600;">📅 已連結</span>`:
+            `<span style="font-size:10px;padding:2px 7px;border-radius:2px;background:var(--surface2);color:var(--text3);">未啟用</span>`}
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════
+function renderNotifications(el) {
+  const myNotifs = NOTIFICATIONS.filter(n=>n.roles.includes(currentUser));
+  el.innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div style="font-size:13px;color:var(--text3);">共 ${myNotifs.length} 則通知，${myNotifs.filter(n=>n.unread).length} 則未讀</div>
+    <button class="tb-btn" onclick="markAllRead()">全部標為已讀</button>
+  </div>
+  <div class="notif-list" id="notifList">
+  ${myNotifs.map((n,i)=>`
+  <div class="notif-item" id="notif-${i}">
+    ${n.unread?`<div class="unread-dot"></div>`:'<div style="width:7px;"></div>'}
+    <div class="ni-badge ${n.cls}">${n.icon}</div>
+    <div class="notif-body">
+      <div class="notif-title">${n.title}</div>
+      <div class="notif-desc">${n.desc}</div>
+    </div>
+    <div class="notif-time">${n.time}</div>
+  </div>`).join('')}
+  </div>`;
+}
+
+function markAllRead() {
+  NOTIFICATIONS.forEach(n=>n.unread=false);
+  document.getElementById('notifCount').textContent = '(0)';
+  document.querySelectorAll('.nav-badge').forEach(b=>b.textContent='0');
+  renderNotifications(document.getElementById('mainContent'));
+}
+
+// ═══════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════
+function openProjectModal(id) {
+  const projects = currentUser==='meng' ? MENG_PROJECTS : PROJECTS;
+  const p = (id ? (currentUser==='meng'?MENG_PROJECTS:PROJECTS) : PROJECTS).find(x=>x.id===id);
+  if (!p) return;
+  const r = Math.round(p.spent/p.budget*100);
+  openModal(p.name, `
+    <div class="mf-row"><div class="mf-label">委託客戶</div><div class="mf-val">${p.client}</div></div>
+    <div class="mf-row"><div class="mf-label">工地地點</div><div class="mf-val">${p.site}</div></div>
+    <div class="mf-row"><div class="mf-label">負責人</div><div class="mf-val">${p.lead}</div></div>
+    <div class="mf-row"><div class="mf-label">截止日期</div><div class="mf-val" style="font-family:'DM Mono',monospace;">${p.due}</div></div>
+    <div class="mf-row">
+      <div class="mf-label">完成度</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="g-bar" style="flex:1;"><div class="g-fill" style="width:${p.pct}%;background:${p.color};"></div></div>
+        <div style="font-family:'DM Mono',monospace;font-size:13px;">${p.pct}%</div>
+      </div>
+    </div>
+    <div class="mf-row">
+      <div class="mf-label">預算執行率</div>
+      <div style="font-size:20px;font-weight:900;font-family:'Syne',sans-serif;color:${r>=90?'var(--red)':'var(--earth2)'};">${r}% ${r>=90?'⚠':''}</div>
+      <div style="font-size:11px;color:var(--text3);">預算 NT$ ${(p.budget/10000).toFixed(0)}萬 · 已支出 NT$ ${(p.spent/10000).toFixed(0)}萬</div>
+    </div>
+    <div style="margin-top:8px;padding:10px 12px;background:var(--gcal-pale);border-radius:4px;border:1px solid rgba(66,133,244,0.2);font-size:11px;color:var(--gcal);">
+      📆 此案工項已自動同步至 Google Calendar
+    </div>
+  `);
+}
+
+function openModal(title, body) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(e) { if(e.target===document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+function showNotifModal() {
+  const myNotifs = NOTIFICATIONS.filter(n=>n.roles.includes(currentUser));
+  openModal('通知中心', `<div class="notif-list">
+    ${myNotifs.map(n=>`
+    <div class="notif-item">
+      ${n.unread?`<div class="unread-dot"></div>`:'<div style="width:7px;"></div>'}
+      <div class="ni-badge ${n.cls}">${n.icon}</div>
+      <div class="notif-body"><div class="notif-title">${n.title}</div><div class="notif-desc">${n.desc}</div></div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('')}
+  </div>`);
+}
+
+
+// ═══════════════════════════════════
+//  GOOGLE CALENDAR 整合
+//  ⚙️  填入你的設定後即可使用
+// ═══════════════════════════════════
+
+// ── 填入你的 Google Cloud 設定 ──────
+const GCAL_CONFIG = {
+  // 步驟完成後填入這兩個值（詳見設定說明）
+  CLIENT_ID: '167341655249-407e3i1fci2kl1i06qum9q0hd99juo6m.apps.googleusercontent.com',
+  API_KEY:   'AIzaSyC0NaxJ3WzZuOSSpPNsBDHn9R5coZUuPl4',
+  DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
+  SCOPES: 'https://www.googleapis.com/auth/calendar',
+  CALENDAR_ID: 'mujie999999@gmail.com',
+};
+
+// GCal 狀態
+let gapiInited = false;
+let gisInited  = false;
+let tokenClient = null;
+let gcalAuthorized = false;
+let gcalEvents = [];    // 快取真實日曆事件
+
+// gapi 載入完成
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    if (!GCAL_CONFIG.API_KEY || !GCAL_CONFIG.CLIENT_ID) return;
+    await gapi.client.init({
+      apiKey: GCAL_CONFIG.API_KEY,
+      discoveryDocs: [GCAL_CONFIG.DISCOVERY_DOC],
+    });
+    gapiInited = true;
+    maybeEnableGCal();
+  });
+}
+
+// GIS 載入完成
+function gisLoaded() {
+  if (!GCAL_CONFIG.CLIENT_ID) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GCAL_CONFIG.CLIENT_ID,
+    scope: GCAL_CONFIG.SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { console.error('GCal auth error:', resp); return; }
+      gcalAuthorized = true;
+      showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
+      await loadGCalEvents();
+      // 如果目前在排程頁面，重新渲染
+      if (currentTab === 'schedule') navigateTo('schedule');
+    },
+  });
+  gisInited = true;
+  maybeEnableGCal();
+}
+
+function maybeEnableGCal() {
+  if (gapiInited && gisInited) {
+    console.log('✅ Google Calendar API 就緒');
+  }
+}
+
+// 觸發授權（如果尚未授權）
+function authorizeGCal() {
+  if (!GCAL_CONFIG.CLIENT_ID || !GCAL_CONFIG.API_KEY) {
+    openGCalSetupModal();
+    return;
+  }
+  if (!gapiInited || !gisInited) {
+    showToast('Google API 載入中，請稍候...');
+    return;
+  }
+  if (gcalAuthorized) {
+    loadGCalEvents().then(() => {
+      if (currentTab === 'schedule') navigateTo('schedule');
+    });
+    return;
+  }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+// 讀取 Google Calendar 事件
+async function loadGCalEvents() {
+  const now = new Date();
+  const timeMin = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+  const timeMax = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
+  try {
+    const res = await gapi.client.calendar.events.list({
+      calendarId: GCAL_CONFIG.CALENDAR_ID,
+      timeMin, timeMax,
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: 500,
+    });
+    const items = res.result.items || [];
+    // 轉換為系統格式
+    gcalEvents = items.map(e => ({
+      id:    e.id,
+      date:  e.start?.date || e.start?.dateTime?.split('T')[0] || '',
+      text:  e.summary || '（無標題）',
+      cls:   gcalColorToCls(e.colorId),
+      proj:  0,
+      gcalId: e.id,
+      raw:   e,
+    }));
+    console.log(`✅ 載入 ${gcalEvents.length} 筆 Google Calendar 事件`);
+    return gcalEvents;
+  } catch (err) {
+    console.error('GCal 讀取失敗:', err);
+    showToast('日曆讀取失敗，請重新授權');
+    gcalAuthorized = false;
+    return [];
+  }
+}
+
+// Google Calendar 顏色 ID → CSS class
+function gcalColorToCls(colorId) {
+  const map = {
+    '1':'ce-sage', '2':'ce-sage', '3':'ce-sage',
+    '4':'ce-red',  '5':'ce-amber','6':'ce-earth',
+    '7':'ce-blue', '8':'ce-blue', '9':'ce-blue',
+    '10':'ce-sage','11':'ce-red',
+  };
+  return map[colorId] || 'ce-gcal';
+}
+
+// 取得當前要顯示的日曆事件（真實或假資料）
+function getCalEvents() {
+  if (gcalAuthorized && gcalEvents.length > 0) {
+    // 角色篩選
+    return filterGCalByRole(gcalEvents, currentUser);
+  }
+  // 尚未授權：用假資料
+  return currentUser === 'meng' ? MENG_CAL_EVENTS : CAL_EVENTS;
+}
+
+// 依角色篩選 Google Calendar 事件
+function filterGCalByRole(events, userId) {
+  if (['kuo', 'tsai-c'].includes(userId)) return events; // 全部
+  if (userId === 'tsai-h') return events; // 設計師看全部（可再細化）
+  if (userId === 'chiu') return events;   // 主任看全部（可設定負責案件）
+  if (userId === 'meng') {
+    // 阿孟只看負責工地
+    const mySites = WORKERS.filter(w => w.name && w.site !== '—').map(w => w.site);
+    const allowedSites = mySites.length > 0 ? mySites : ['綠蔭社區'];
+    return events.filter(e => {
+      const text = (e.text || '') + (e.raw?.location || '') + (e.raw?.description || '');
+      return allowedSites.some(s => text.includes(s));
+    });
+  }
+  return events;
+}
+
+// 寫入新工項至 Google Calendar
+async function writeEventToGCal(taskData) {
+  if (!gcalAuthorized) {
+    authorizeGCal();
+    return null;
+  }
+  try {
+    const event = {
+      summary: `${taskData.projectName || ''} ${taskData.title}`,
+      description: `案件：${taskData.projectName || ''}\n負責人：${taskData.assignee || ''}\n--- 沐頡景觀設計系統 ---`,
+      location: taskData.site || '',
+      start: { date: taskData.date, timeZone: 'Asia/Taipei' },
+      end:   { date: taskData.date, timeZone: 'Asia/Taipei' },
+      colorId: '2',
+      extendedProperties: { private: { mujieSystem: 'true', projectName: taskData.projectName || '' } },
+    };
+    const res = await gapi.client.calendar.events.insert({
+      calendarId: GCAL_CONFIG.CALENDAR_ID,
+      resource: event,
+    });
+    await loadGCalEvents(); // 重新載入
+    return res.result;
+  } catch (err) {
+    console.error('GCal 寫入失敗:', err);
+    showToast('寫入 Google Calendar 失敗');
+    return null;
+  }
+}
+
+// 設定說明 Modal
+function openGCalSetupModal() {
+  openModal('🔧 Google Calendar 設定說明', `
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:16px;">
+      只需要完成以下 <strong style="color:var(--sage2);">3 個步驟</strong>，大約 10 分鐘，完成後把兩串代碼填入系統即可串接真實日曆。
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="padding:12px 14px;background:var(--surface3);border-radius:6px;border-left:3px solid var(--amber);">
+        <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;">STEP 1 — 建立 Google Cloud 專案</div>
+        <div style="font-size:11px;color:var(--text2);">
+          1. 開啟 <a href="https://console.cloud.google.com" target="_blank" style="color:var(--gcal);">console.cloud.google.com</a>（用 mujie999999@gmail.com 登入）<br>
+          2. 左上角「選取專案」→「新增專案」→ 名稱填 <code style="background:var(--surface2);padding:1px 5px;border-radius:2px;">mujie-system</code><br>
+          3. 左側「API 和服務」→「程式庫」→ 搜尋 <strong>Google Calendar API</strong> → 啟用
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--surface3);border-radius:6px;border-left:3px solid var(--blue);">
+        <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">STEP 2 — 建立 API 金鑰</div>
+        <div style="font-size:11px;color:var(--text2);">
+          1. 「API 和服務」→「憑證」→「建立憑證」→「API 金鑰」<br>
+          2. 複製這串金鑰（AIzaSy 開頭），貼到下方 API Key 欄位
+        </div>
+      </div>
+      <div style="padding:12px 14px;background:var(--surface3);border-radius:6px;border-left:3px solid var(--gcal);">
+        <div style="font-size:11px;font-weight:700;color:var(--gcal);margin-bottom:6px;">STEP 3 — 建立 OAuth 用戶端 ID</div>
+        <div style="font-size:11px;color:var(--text2);">
+          1. 「建立憑證」→「OAuth 用戶端 ID」→ 類型選「網頁應用程式」<br>
+          2. 已授權的 JavaScript 來源填：<code style="background:var(--surface2);padding:1px 5px;border-radius:2px;">http://localhost:8080</code>（或你開啟檔案的網址）<br>
+          3. 複製用戶端 ID（數字-abc.apps.googleusercontent.com），貼到下方
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'DM Mono',monospace;">CLIENT ID</div>
+        <input id="inputClientId" placeholder="貼上 OAuth 用戶端 ID（xxxx.apps.googleusercontent.com）"
+          style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'DM Mono',monospace;">
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'DM Mono',monospace;">API KEY</div>
+        <input id="inputApiKey" placeholder="貼上 API 金鑰（AIzaSy...）"
+          style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'DM Mono',monospace;">
+      </div>
+    </div>
+    <button onclick="applyGCalConfig()"
+      style="width:100%;padding:11px;border-radius:5px;border:none;background:var(--gcal);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">
+      📅 儲存並連結 Google Calendar
+    </button>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center;">
+      設定只儲存在瀏覽器本地，不會上傳到任何伺服器
+    </div>
+  `);
+  // 填入已儲存的設定
+  setTimeout(() => {
+    const saved = loadSavedConfig();
+    if (saved.CLIENT_ID) document.getElementById('inputClientId').value = saved.CLIENT_ID;
+    if (saved.API_KEY)   document.getElementById('inputApiKey').value   = saved.API_KEY;
+  }, 100);
+}
+
+// 套用設定
+function applyGCalConfig() {
+  const clientId = document.getElementById('inputClientId')?.value.trim();
+  const apiKey   = document.getElementById('inputApiKey')?.value.trim();
+  if (!clientId || !apiKey) { showToast('請填入 Client ID 和 API Key'); return; }
+  GCAL_CONFIG.CLIENT_ID = clientId;
+  GCAL_CONFIG.API_KEY   = apiKey;
+  // 儲存至 localStorage
+  localStorage.setItem('mujie_gcal_config', JSON.stringify({ CLIENT_ID: clientId, API_KEY: apiKey }));
+  closeModalDirect();
+  showToast('設定已儲存，正在初始化 Google Calendar...');
+  // 重新初始化
+  setTimeout(() => {
+    initGapiFromConfig();
+  }, 500);
+}
+
+// 從 localStorage 載入已儲存的設定
+function loadSavedConfig() {
+  try {
+    return JSON.parse(localStorage.getItem('mujie_gcal_config') || '{}');
+  } catch { return {}; }
+}
+
+// 用儲存的設定初始化 gapi
+function initGapiFromConfig() {
+  const saved = loadSavedConfig();
+  if (saved.CLIENT_ID) GCAL_CONFIG.CLIENT_ID = saved.CLIENT_ID;
+  if (saved.API_KEY)   GCAL_CONFIG.API_KEY   = saved.API_KEY;
+  if (GCAL_CONFIG.API_KEY && GCAL_CONFIG.CLIENT_ID) {
+    if (typeof gapi !== 'undefined') {
+      gapi.load('client', async () => {
+        await gapi.client.init({
+          apiKey: GCAL_CONFIG.API_KEY,
+          discoveryDocs: [GCAL_CONFIG.DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        if (typeof google !== 'undefined') {
+          tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GCAL_CONFIG.CLIENT_ID,
+            scope: GCAL_CONFIG.SCOPES,
+            callback: async (resp) => {
+              if (resp.error) return;
+              gcalAuthorized = true;
+              showToast('Google Calendar 已授權 ✓ 正在載入日曆...');
+              await loadGCalEvents();
+              if (currentTab === 'schedule') navigateTo('schedule');
+            },
+          });
+          gisInited = true;
+          showToast('Google Calendar API 就緒，點排程日曆開始授權 ✓');
+        }
+      });
+    }
+  }
+}
+
+// 頁面載入時自動讀取儲存的設定
+window.addEventListener('load', () => {
+  setTimeout(initGapiFromConfig, 1500);
+});
+
+// Google Calendar 按鈕處理
+function handleGCalBtn() {
+  if (!GCAL_CONFIG.CLIENT_ID || !GCAL_CONFIG.API_KEY) {
+    openGCalSetupModal();
+  } else if (!gcalAuthorized) {
+    authorizeGCal();
+  } else {
+    loadGCalEvents().then(() => {
+      navigateTo('schedule');
+      showToast('日曆已重新同步 ✓');
+    });
+  }
+}
+
+// 更新 GCal 按鈕狀態
+function updateGCalBtn() {
+  const btn  = document.getElementById('gcalBtn');
+  const text = document.getElementById('gcalBtnText');
+  if (!btn || !text) return;
+  if (!GCAL_CONFIG.CLIENT_ID) {
+    text.textContent = '設定 Google Calendar';
+    btn.style.borderColor = 'var(--amber)';
+    btn.style.color = 'var(--amber)';
+  } else if (!gcalAuthorized) {
+    text.textContent = '授權並載入日曆';
+    btn.style.borderColor = 'var(--gcal)';
+    btn.style.color = 'var(--gcal)';
+  } else {
+    text.textContent = `已連結（${gcalEvents.length} 筆）`;
+    btn.style.borderColor = 'var(--sage)';
+    btn.style.color = 'var(--sage2)';
+  }
+}
+
+// 新增工項並同步至 Google Calendar
+async function saveNewEvent() {
+  const titleEl   = document.querySelector('#modalBody input[placeholder="輸入工項名稱"]');
+  const projectEl = document.querySelector('#modalBody select');
+  const dateEl    = document.querySelector('#modalBody input[type="date"]');
+  const title   = titleEl?.value.trim() || '新工項';
+  const project = projectEl?.value || '';
+  const date    = dateEl?.value || new Date().toISOString().split('T')[0];
+  closeModalDirect();
+  showToast('儲存中...');
+  const taskData = { title, projectName: project, date, assignee: USERS[currentUser]?.name, site: '' };
+  if (gcalAuthorized) {
+    const result = await writeEventToGCal(taskData);
+    if (result) {
+      showToast(`工項「${title}」已新增並同步至 Google Calendar ✓`);
+      if (currentTab === 'schedule') navigateTo('schedule');
+      return;
+    }
+  }
+  showToast(`工項「${title}」已新增（Google Calendar 未連結）`);
+}
+
+// ═══════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--sage);color:#fff;padding:12px 20px;border-radius:6px;font-size:13px;font-weight:600;z-index:999;animation:fadeSlide 0.3s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+</script>
+</body>
+</html>
