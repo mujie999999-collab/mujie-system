@@ -759,7 +759,8 @@ function renderDashboard(el) {
 //  SCHEDULE
 // ═══════════════════════════════════
 const MONTHS = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
-let calYear = 2025, calMonth = 5; // June 2025
+const _today = new Date();
+let calYear = _today.getFullYear(), calMonth = _today.getMonth(); // 自動帶入今天月份
 let calView = 'month';
 
 const CAL_EVENTS = [
