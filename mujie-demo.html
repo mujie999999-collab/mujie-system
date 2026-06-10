@@ -1413,21 +1413,32 @@ const GAS_TOKEN_URL = 'https://script.google.com/macros/s/AKfycbyO1cxE9NPHejypQG
 
 
 // ── GAS Token Server 函式 ──────────────────────
-async function saveTokenToGAS(userId, token, expiresAt) {
+function saveTokenToGAS(userId, token, expiresAt) {
   try {
-    const url = `${GAS_TOKEN_URL}?action=saveToken&user=${userId}&token=${encodeURIComponent(token)}&expires=${expiresAt}`;
-    await fetch(url);
+    // 用 img 標籤繞過 CORS 限制
+    const url = `${GAS_TOKEN_URL}?action=saveToken&user=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}&expires=${expiresAt}`;
+    const img = new Image();
+    img.src = url;
+    // 同時用 no-cors fetch 備援
+    fetch(url, { mode: 'no-cors' }).catch(()=>{});
+    console.log('Token save requested for:', userId);
   } catch(e) { console.log('GAS save token failed:', e); }
 }
 
 async function loadTokenFromGAS(userId) {
   try {
-    const url = `${GAS_TOKEN_URL}?action=getToken&user=${userId}`;
-    const res = await fetch(url);
+    const url = `${GAS_TOKEN_URL}?action=getToken&user=${encodeURIComponent(userId)}&t=${Date.now()}`;
+    const res = await fetch(url, { mode: 'cors' });
     const data = await res.json();
-    if (data.status === 'ok' && data.access_token) return data.access_token;
+    if (data.status === 'ok' && data.access_token) {
+      console.log('Token loaded from GAS for:', userId);
+      return data.access_token;
+    }
     return null;
-  } catch(e) { return null; }
+  } catch(e) {
+    console.log('GAS load token failed:', e);
+    return null;
+  }
 }
 // GCal 狀態
 let gapiInited = false;
